@@ -1,4 +1,4 @@
-import { useCarrito } from "../context/CarritoContext";
+import { useCarrito } from "../context/CarritoContext"; 
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast"; // ✅ Importar
 
