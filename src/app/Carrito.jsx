@@ -232,7 +232,7 @@ function Carrito() {
             onClick={generarComprobante}
             className="bg-blue-500 text-white font-bold px-6 py-2 rounded hover:bg-blue-600 transition"
           >
-            Generar comprobante
+            Cotizar / Imprimir
           </button>
 
           <button
