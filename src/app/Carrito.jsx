@@ -1,11 +1,93 @@
 import { useCarrito } from "../context/CarritoContext";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { jsPDF } from "jspdf";
 
 function Carrito() {
   const { items, removeItem, clearCart, decreaseItem, addItem, productos } = useCarrito();
 
   const total = items.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+
+  const generarComprobante = () => {
+    const doc = new jsPDF();
+
+    // === ENCABEZADO EMPRESA ===
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("FERRETERÍA FERREMAX", 20, 20);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("RUC: 20101001010", 20, 26);
+    doc.text("Dirección: Av. Principal 123, Lima - Perú", 20, 32);
+    doc.text("Tel: 999888777 | Email: contacto@ferremax.com", 20, 38);
+
+    // === RECUADRO DE BOLETA ===
+    doc.setFontSize(12);
+    doc.rect(140, 15, 60, 25); // cuadro derecho
+    doc.text("BOLETA DE VENTA", 145, 25);
+    doc.text("ELECTRÓNICA", 145, 32);
+    doc.text("N° B001 - 000123", 145, 39);
+
+    // === DATOS DEL CLIENTE ===
+    doc.setFontSize(10);
+    doc.text("Cliente: ****** *****", 20, 55);
+    doc.text("DNI: ********", 20, 61);
+    doc.text("Fecha emisión: 25/08/2025", 20, 67);
+    doc.line(20, 70, 200, 70); // línea separadora
+
+    // === TABLA PRODUCTOS ===
+    let startY = 80;
+
+    // Encabezados
+    doc.setFont("helvetica", "bold");
+    doc.text("Cant.", 22, startY);
+    doc.text("Descripción", 45, startY);
+    doc.text("P. Unit.", 140, startY);
+    doc.text("Importe", 180, startY);
+
+    doc.setFont("helvetica", "normal");
+
+    // Productos dinámicos
+    startY += 10;
+    items.forEach((item) => {
+      doc.text(String(item.cantidad), 25, startY);
+      doc.text(item.nombre, 45, startY);
+      doc.text(item.precio.toFixed(2), 145, startY, { align: "right" });
+      doc.text((item.precio * item.cantidad).toFixed(2), 190, startY, { align: "right" });
+      startY += 8;
+    });
+
+    // === TOTALES ===
+    const subtotal = total / 1.18; // suponiendo IGV 18%
+    const igv = total - subtotal;
+
+    startY += 10;
+    doc.line(20, startY, 200, startY);
+    startY += 10;
+    doc.setFontSize(10);
+    doc.text("Op. Gravada (S/)", 140, startY);
+    doc.text(subtotal.toFixed(2), 190, startY, { align: "right" });
+    startY += 6;
+    doc.text("IGV (18%)", 140, startY);
+    doc.text(igv.toFixed(2), 190, startY, { align: "right" });
+    startY += 6;
+    doc.setFont("helvetica", "bold");
+    doc.text("TOTAL", 140, startY);
+    doc.text(total.toFixed(2), 190, startY, { align: "right" });
+
+    // === PIE DE PÁGINA ===
+    startY += 20;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Representación impresa de la Boleta de Venta Electrónica", 20, startY);
+    doc.text("Autorizado por SUNAT", 20, startY + 6);
+
+    // Mostrar en nueva pestaña para imprimir
+    doc.output("dataurlnewwindow");
+  };
+
+
+
 
   if (items.length === 0) {
     return (
@@ -145,6 +227,14 @@ function Carrito() {
           >
             Vaciar carrito
           </button>
+
+          <button
+            onClick={generarComprobante}
+            className="bg-blue-500 text-white font-bold px-6 py-2 rounded hover:bg-blue-600 transition"
+          >
+            Generar comprobante
+          </button>
+
           <button
             onClick={() => toast.success("Compra finalizada ✅")}
             className="bg-ferreYellow text-ferreBlue font-bold px-6 py-2 rounded hover:bg-yellow-400 transition"
@@ -156,5 +246,8 @@ function Carrito() {
     </div>
   );
 }
+
+
+
 
 export default Carrito;
